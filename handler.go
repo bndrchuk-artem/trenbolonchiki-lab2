@@ -1,12 +1,43 @@
 package lab2
 
-// ComputeHandler should be constructed with input io.Reader and output io.Writer.
-// Its Compute() method should read the expression from input and write the computed result to the output.
+import (
+	"io"
+	"strconv"
+	"strings"
+	"log"
+)
+
 type ComputeHandler struct {
-	// TODO: Add necessary fields.
+	Input  io.Reader
+	Output io.Writer
 }
 
 func (ch *ComputeHandler) Compute() error {
-	// TODO: Implement.
+	data, err := io.ReadAll(ch.Input)
+	if err != nil {
+		log.Printf("Error reading from input: %v", err)
+		return err
+	}
+
+	expression := strings.TrimSpace(string(data))
+
+	if expression == "" {
+		_, err = ch.Output.Write([]byte("0"))
+		return err
+	}
+
+	result, err := EvaluatePostfix(expression)
+	if err != nil {
+		log.Printf("Error evaluating postfix expression: %v, expression: %s", err, expression)
+		return err
+	}
+
+	resultStr := strconv.Itoa(result)
+	_, err = ch.Output.Write([]byte(resultStr))
+	if err != nil {
+		log.Printf("Error writing to output: %v, result: %s", err, resultStr) 
+		return err
+	}
+
 	return nil
 }
