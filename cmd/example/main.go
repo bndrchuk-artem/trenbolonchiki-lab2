@@ -3,24 +3,58 @@ package main
 import (
 	"flag"
 	"fmt"
-	lab2 "github.com/roman-mazur/architecture-lab-2"
+	"io"
+	"github.com/bndrchuk-artem/trenbolonchiki-lab2"
+	"os"
+	"strings"
 )
 
 var (
-	inputExpression = flag.String("e", "", "Expression to compute")
-	// TODO: Add other flags support for input and output configuration.
+	inputExpr = flag.String("e", "", "Expression to compute")
+	inputFile = flag.String("f", "", "Input file with expression")
+	outputFile = flag.String("o", "", "Output file for results")
 )
 
 func main() {
 	flag.Parse()
 
-	
-	      handler := &lab2.ComputeHandler{
-	          Input: {construct io.Reader according the command line parameters},
-	          Output: {construct io.Writer according the command line parameters},
-	      }
-	      err := handler.Compute()
+	if *inputExpr != "" && *inputFile != "" {
+		fmt.Fprintln(os.Stderr, "Error: use either -e or -f, not both")
+		os.Exit(1)
+	}
 
-	res, _ := lab2.PrefixToPostfix("+ 2 2")
-	fmt.Println(res)
+	var input io.Reader
+	if *inputExpr != "" {
+		input = strings.NewReader(*inputExpr)
+	} else if *inputFile != "" {
+		file, err := os.Open(*inputFile)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error opening file: %v\n", err)
+			os.Exit(1)
+		}
+		defer file.Close()
+		input = file
+	} else {
+		fmt.Fprintln(os.Stderr, "Error: no input provided (use -e or -f)")
+		os.Exit(1)
+	}
+
+	var output io.Writer
+	if *outputFile != "" {
+		file, err := os.Create(*outputFile)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error creating file: %v\n", err)
+			os.Exit(1)
+		}
+		defer file.Close()
+		output = file
+	} else {
+		output = os.Stdout
+	}
+
+	handler := &lab2.ComputeHandler{Input: input, Output: output}
+	if err := handler.Compute(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
 }
