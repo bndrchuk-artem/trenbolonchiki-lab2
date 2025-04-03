@@ -12,7 +12,7 @@ func TestEvaluatePostfix(t *testing.T) {
 		expected int
 		err      bool
 	}{
-		{"Simple addition", "2 2 +", 5, false},//
+		{"Simple addition", "2 2 +", 4, false},
 		{"Simple subtraction", "5 3 -", 2, false},
 		{"Simple multiplication", "3 4 *", 12, false},
 		{"Complex expression", "4 2 - 3 * 5 +", 11, false},
